@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+
+# Local editor/agent settings
+.claude/
+.idea/
+.vscode/
+*.iml
+
+# Android local SDK and generated output
+android-forwarder/local.properties
+android-forwarder/.gradle/
+android-forwarder/build/
+android-forwarder/app/build/

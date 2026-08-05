@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+      Izinkan HTTP polos (cleartext) untuk SEMUA host.
+
+      Alasan: server URL berbeda per lingkungan tanpa harus rebuild APK:
+        - AVD (Android Studio)  : http://10.0.2.2:3000/ingest
+        - redroid (server Linux): http://172.17.0.1:3000/ingest atau IP LAN server
+
+      ⚠️  PRODUKSI: ganti komunikasi ke HTTPS dan SET base-config
+          cleartextTrafficPermitted="false". Cleartext hanya untuk
+          jaringan internal/terkontrol (container ↔ host).
+    -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
