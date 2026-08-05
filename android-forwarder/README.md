@@ -12,19 +12,39 @@ meneruskan isinya ke Ingest Server.
 
 ## Build APK
 
+Masuk ke folder project dan arahkan sesi PowerShell ke JDK 21:
+
 ```powershell
-cd android-forwarder
+cd D:\wa-otp-receiver\android-forwarder
 $env:JAVA_HOME='C:\Program Files\Java\jdk-21'
-.\gradlew.bat assembleDebug
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+java -version
 ```
 
-APK hasil build: `app/build/outputs/apk/debug/app-debug.apk`.
+Pastikan file `local.properties` menunjuk ke lokasi Android SDK. Contoh:
+
+```properties
+sdk.dir=C\:\\Users\\ivan.david\\AppData\\Local\\Android\\Sdk
+```
+
+File tersebut bersifat lokal dan tidak disimpan di GitHub. Kemudian jalankan
+clean build dan lint:
+
+```powershell
+.\gradlew.bat clean assembleDebug
+.\gradlew.bat lintDebug
+```
+
+Build berhasil apabila terminal menampilkan `BUILD SUCCESSFUL`. APK akan dibuat
+di `app/build/outputs/apk/debug/app-debug.apk`, sedangkan laporan lint tersedia
+di `app/build/reports/lint-results-debug.html`.
 
 ## Instalasi di HP fisik
 
 Aktifkan USB debugging, sambungkan HP, lalu jalankan:
 
 ```powershell
+adb devices
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
