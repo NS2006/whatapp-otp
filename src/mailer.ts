@@ -16,23 +16,25 @@ const transporter = nodemailer.createTransport({
 export async function sendOtpEmail(params: {
   otp: string;
   otpType: 'code' | 'link';
+  otpFrom: string;
   senderPhone: string;
   senderName: string;
   receiverPhone: string;
   messageBody: string;
   timestamp: string;
 }): Promise<void> {
-  const { otp, otpType, senderPhone, senderName, receiverPhone, messageBody, timestamp } = params;
+  const { otp, otpType, otpFrom, senderPhone, senderName, receiverPhone, messageBody, timestamp } = params;
 
+  const abbrOtpFrom = otpFrom === "Whatsapp" ? "WA" : "SMS"
   const isLink = otpType === 'link';
-  const subject = `[WA OTP] ${isLink ? 'Link Verifikasi' : otp} — diterima di ${receiverPhone}`;
+  const subject = `[${abbrOtpFrom} OTP] ${isLink ? 'Link Verifikasi' : otp} — diterima di ${receiverPhone}`;
 
   const otpDisplay = isLink
     ? `<a href="${otp}" style="font-size:16px;color:#1565c0;">${otp}</a>`
     : `<span style="font-size:24px;font-weight:bold;color:#d32f2f;">${otp}</span>`;
 
   const html = `
-    <h2>OTP Terdeteksi</h2>
+    <h2>${otpFrom} OTP Terdeteksi</h2>
     <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
       <tr><td><b>Tipe OTP</b></td><td>${isLink ? 'Link Verifikasi' : 'Kode Angka'}</td></tr>
       <tr><td><b>${isLink ? 'Link' : 'Kode OTP'}</b></td><td>${otpDisplay}</td></tr>

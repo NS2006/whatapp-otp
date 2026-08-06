@@ -18,7 +18,16 @@ export interface NotificationPayload {
   postedAt?: number;
 }
 
-const WHATSAPP_PACKAGES = ['com.whatsapp', 'com.whatsapp.w4b'];
+const TARGET_PACKAGES = [
+  // --- WhatsApp ---
+  'com.whatsapp', 
+  'com.whatsapp.w4b',
+  
+  // --- SMS --- Tambah package lain jika package dibawah tidak mengcover tipe HP lainnya
+  'com.android.mms',
+  'com.google.android.apps.messaging',  
+  'com.samsung.android.messaging'
+];
 
 export interface IngestResult {
   status: 'sent' | 'no_otp' | 'ignored';
@@ -35,16 +44,29 @@ export async function handleNotification(
 ): Promise<IngestResult> {
   const { phone, title, text, packageName, postedAt } = payload;
 
-  // Filter: hanya proses notifikasi dari WhatsApp
-  if (packageName && !WHATSAPP_PACKAGES.includes(packageName)) {
+
+  // DEBUG -> Print notif yang masuk dari POST request
+  console.log(`\nDEBUG: Received notification from Package: ${packageName}`);
+  console.log(`Text: ${text}`);
+
+  // Filter: hanya proses notifikasi dari WhatsApp dan SMS
+  if (packageName && !TARGET_PACKAGES.includes(packageName)) {
     console.log(`⏭️  Ignored notif from ${packageName}`);
     return { status: 'ignored' };
   }
 
   const timestamp = new Date(postedAt ?? Date.now()).toLocaleString('id-ID');
 
+
+  // Print data notifikasi yang masuk ke termina
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`📩 [Ingest] WhatsApp notification`);
+
+  if(packageName?.startsWith("com.whatsapp")){  
+    console.log(`📩 [Ingest] WhatsApp notification`);
+  } else{
+    console.log(`📩 [Ingest] SMS notification`);
+  }
+
   console.log(`   Phone      : ${phone}`);
   console.log(`   Title      : ${title ?? '-'}`);
   console.log(`   Text       : ${text}`);
@@ -57,14 +79,17 @@ export async function handleNotification(
     return { status: 'no_otp' };
   }
 
+  const otpFrom = packageName?.startsWith("com.whatsapp") ? "Whatsapp" : "SMS"
+
   const label = otpResult.type === 'link' ? 'OTP LINK' : 'OTP CODE';
-  console.log(`   🔐 ${label} DETECTED: ${otpResult.value}`);
+  console.log(`   🔐 ${label} DETECTED FROM ${otpFrom}: ${otpResult.value}`);
   console.log(`   📧 Sending OTP email...`);
 
   try {
     await sendOtpEmail({
       otp: otpResult.value,
       otpType: otpResult.type,
+      otpFrom: otpFrom,
       senderPhone: title ?? 'Unknown',
       senderName: title ?? 'Unknown',
       receiverPhone: phone,

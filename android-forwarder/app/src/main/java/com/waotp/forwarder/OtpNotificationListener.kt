@@ -23,33 +23,72 @@ class OtpNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val pkg = sbn.packageName
-        if (pkg !in WHATSAPP_PACKAGES) return
+        if (pkg !in ALLOWED_PACKAGES) return
 
         val extras = sbn.notification.extras
+
+        val channelId = sbn.notification.channelId.orEmpty()
+        // simSlot = 0 -> Sim Card Pertama
+        // simSlot = 1 -> Sim Card Kedua
+        val simSlot = Regex("slot(\\d+)", RegexOption.IGNORE_CASE)
+            .find(channelId)
+            ?.groupValues
+            ?.get(1)
+            ?.toIntOrNull()
+
+        Log.d(TAG, "Channel = $channelId")
+        Log.d(TAG, "SIM Slot = $simSlot")
+
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
             ?: extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()
             ?: ""
 
         if (text.isBlank()) return
-
-        // Abaikan notifikasi non-pesan (mis. "Checking for new messages")
         if (title.isBlank() && text.startsWith("Checking")) return
 
-        Log.d(TAG, "Notif from $pkg | $title | $text")
-        forward(title, text, pkg, sbn.postTime)
+        forward(title, text, pkg, sbn.postTime, simSlot)
     }
 
-    private fun forward(title: String, text: String, pkg: String, postedAt: Long) {
+    private fun forward(title: String, text: String, pkg: String, postedAt: Long, simSlot: Int?) {
         val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
         val serverUrl = prefs.getString("server_url", null) ?: return
-        val phone = prefs.getString("phone", null) ?: return
+        
+        // Ambil data
+        val phone1 = prefs.getString("phone1", "") ?: ""
+        val phone2 = prefs.getString("phone2", "") ?: ""
+        val waType1 = prefs.getString("wa_type1", "none") ?: "none"
+        val waType2 = prefs.getString("wa_type2", "none") ?: "none"
         val token = prefs.getString("token", "") ?: ""
+
+
+        var matchedPhone = phone1 // Default nya SIM 1
+
+        if (pkg == "com.whatsapp") {
+            // Cek nomor mana yang WA biasa
+            if (waType1 == "personal") matchedPhone = phone1
+            else if (waType2 == "personal") matchedPhone = phone2
+        } else if (pkg == "com.whatsapp.w4b") {
+            // Cek nomor mana yang WA Business
+            if (waType1 == "business") matchedPhone = phone1
+            else if (waType2 == "business") matchedPhone = phone2
+        } else {
+            // Cek nomor mana yang dapat SMS berdasarkan SIM Slot
+            if (simSlot == 1) {
+                matchedPhone = phone2
+            } else {
+                matchedPhone = phone1
+            }
+        }
+
+        if (matchedPhone.isBlank()) {
+            matchedPhone = phone1
+        }
 
         executor.execute {
             try {
                 val body = JSONObject().apply {
-                    put("phone", phone)
+                    put("phone", matchedPhone)
                     put("title", title)
                     put("text", text)
                     put("packageName", pkg)
@@ -70,7 +109,7 @@ class OtpNotificationListener : NotificationListenerService() {
                 }
 
                 val code = conn.responseCode
-                Log.d(TAG, "Forwarded → HTTP $code")
+                Log.d(TAG, "Forwarded → HTTP $code | Phone: $matchedPhone")
                 conn.disconnect()
             } catch (e: Exception) {
                 Log.e(TAG, "Forward failed: ${e.message}")
@@ -81,6 +120,15 @@ class OtpNotificationListener : NotificationListenerService() {
     companion object {
         private const val TAG = "OtpForwarder"
         const val PREFS = "otp_forwarder_prefs"
-        val WHATSAPP_PACKAGES = setOf("com.whatsapp", "com.whatsapp.w4b")
+        val ALLOWED_PACKAGES = setOf(
+            // WHATSAPP
+            "com.whatsapp", 
+            "com.whatsapp.w4b",
+
+            // SMS -> Tambah packages baru jika package dibawah tidak mengcover tipe HP lainnya
+            "com.android.mms",
+            "com.google.android.apps.messaging",  
+            "com.samsung.android.messaging"
+        )
     }
 }

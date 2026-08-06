@@ -60,7 +60,7 @@ function main() {
   const PORT = parseInt(process.env.INGEST_PORT || '3000', 10);
   app.listen(PORT, () => {
     console.log('\n╔══════════════════════════════════════════════════╗');
-    console.log('║       WhatsApp OTP Ingest Server - Started       ║');
+    console.log('║            OTP Ingest Server - Started           ║');
     console.log('╚══════════════════════════════════════════════════╝');
     console.log(`Ingest API : http://localhost:${PORT}/ingest`);
     console.log(`Health     : http://localhost:${PORT}/`);
