@@ -1,6 +1,7 @@
 package com.waotp.forwarder
 
 import android.app.Notification
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -27,7 +28,11 @@ class OtpNotificationListener : NotificationListenerService() {
 
         val extras = sbn.notification.extras
 
-        val channelId = sbn.notification.channelId.orEmpty()
+        val channelId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            sbn.notification.channelId.orEmpty()
+        } else {
+            ""
+        }
         // simSlot = 0 -> Sim Card Pertama
         // simSlot = 1 -> Sim Card Kedua
         val simSlot = Regex("slot(\\d+)", RegexOption.IGNORE_CASE)
