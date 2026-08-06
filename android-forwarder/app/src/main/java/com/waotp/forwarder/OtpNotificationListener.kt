@@ -23,7 +23,7 @@ class OtpNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val pkg = sbn.packageName
-        if (pkg !in WHATSAPP_PACKAGES) return
+        if (pkg !in ALLOWED_PACKAGES) return
 
         val extras = sbn.notification.extras
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
@@ -81,6 +81,15 @@ class OtpNotificationListener : NotificationListenerService() {
     companion object {
         private const val TAG = "OtpForwarder"
         const val PREFS = "otp_forwarder_prefs"
-        val WHATSAPP_PACKAGES = setOf("com.whatsapp", "com.whatsapp.w4b")
+        val ALLOWED_PACKAGES = setOf(
+            // WHATSAPP
+            "com.whatsapp", 
+            "com.whatsapp.w4b",
+
+            // SMS -> Tambah packages baru jika package dibawah tidak mengcover tipe HP lainnya
+            "com.android.mms",
+            "com.google.android.apps.messaging",  
+            "com.samsung.android.messaging"
+        )
     }
 }

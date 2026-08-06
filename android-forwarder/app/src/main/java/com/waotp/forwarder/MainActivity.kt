@@ -1,12 +1,16 @@
 package com.waotp.forwarder
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 /**
  * Layar konfigurasi: set Server URL, Nomor, Token, lalu buka
@@ -23,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         val urlInput = findViewById<EditText>(R.id.serverUrl)
         val phoneInput = findViewById<EditText>(R.id.phone)
         val tokenInput = findViewById<EditText>(R.id.token)
-
+        
         urlInput.setText(prefs.getString("server_url", "http://10.0.2.2:3000/ingest"))
         phoneInput.setText(prefs.getString("phone", ""))
         tokenInput.setText(prefs.getString("token", ""))
