@@ -1,11 +1,10 @@
-# WhatsApp OTP Receiver
+# OTP Receiver (Android App)
 
-Menangkap OTP WhatsApp yang masuk ke nomor-nomor seller, mengekstrak kode/link OTP-nya,
-lalu meneruskan ke email.
+Aplikasi Android (Notification Listener) yang bertugas menangkap notifikasi OTP (dari WhatsApp, WhatsApp Business, maupun SMS) yang masuk ke perangkat, lalu meneruskannya ke Ingest Server terpusat.
 
 ## Latar belakang & arsitektur
 
-WhatsApp hanya menampilkan pesan OTP tertentu secara lengkap di **primary device**.
+WhatsApp dan SMS hanya menampilkan pesan OTP tertentu secara lengkap di **primary device**.
 Karena itu, aplikasi ini memakai satu jalur saja: membaca notifikasi WhatsApp pada
 perangkat Android utama dan meneruskannya ke ingest server.
 
@@ -14,35 +13,13 @@ device**, lalu baca OTP dari **notifikasi** device itu.
 
 ```
 ┌─ Android device (primary device) ──────────┐
-│  WhatsApp (nomor OTP, login sebagai primary) │
-│  + WA OTP Forwarder (app Android)            │
-│     └─ NotificationListenerService           │
-│         baca notif OTP → POST /ingest ────────┼──▶ Ingest Server (Node, repo ini)
-└──────────────────────────────────────────────┘      └─ extractOtp() + email
+│  WhatsApp / SMS                            │
+│  + WA OTP Forwarder (app Android)          │
+│    └─ NotificationListenerService          │
+│        baca notif OTP → POST /ingest ──────┼──▶ OTP Webportal (Repo Terpisah)
+└──────────────────────────────────────────────┘      └─ Simpan DB & Kirim Email Massal
 ```
-
-- **Ingest Server** (`src/ingest-server.ts`) — Node/Express, repo ini. Terima notif
-  OTP via `POST /ingest`, jalankan `extractOtp` + kirim email.
-- **WA OTP Forwarder** (`android-forwarder/`) — APK Android, baca notif WhatsApp di
-  HP atau emulator, lalu forward ke ingest server.
-
-## Quick Start (Ingest Server)
-
-```bash
-npm install
-cp .env.example .env   # isi MAIL_* dan MAIL_TO minimal
-npm run dev            # ingest server di http://localhost:3000
-```
-
-Test pipeline tanpa emulator (simulasi notif OTP Shopee):
-
-```bash
-curl -X POST http://localhost:3000/ingest \
-     -H "Content-Type: application/json" \
-     -d '{"phone":"628xxx","title":"Shopee Security","text":"SHOPEE: Gunakan Kode OTP 217141 UNTUK DAFTAR AKUN SHOPEE","packageName":"com.whatsapp"}'
-```
-
-Console akan menampilkan `🔐 OTP CODE DETECTED: 217141` + `✅ OTP email sent`.
+- Repository [https://github.com/NS2006/otp-webportal](OTP Web Portal)
 
 ## Setup Forwarder App
 
@@ -80,10 +57,13 @@ adb install -r app\build\outputs\apk\debug\app-debug.apk
 
 Setelah aplikasi terpasang:
 
-1. Isi **Server URL** dengan alamat yang dapat diakses HP, misalnya
-   `https://otp.example.com/ingest` atau `http://192.168.1.10:3000/ingest`.
-2. Jangan gunakan `10.0.2.2` pada HP fisik; alamat tersebut hanya untuk emulator AVD.
-3. Isi **Nomor** WhatsApp dan **Token** yang sama dengan `INGEST_TOKEN` server.
+1. Buka aplikasi.
+2. Isi Server URL dengan alamat endpoint Ingest Server Anda.
+    - Berkat konfigurasi Network Security, Anda dapat dengan aman menggunakan HTTP untuk testing di jaringan lokal (misalnya [http://192.168.1.10:3000/ingest](http://192.168.1.10:3000/ingest)) maupun HTTPS untuk server produksi ([https://otp.example.com/ingest](https://otp.example.com/ingest)).
+
+    - Catatan: Jangan gunakan 10.0.2.2 pada HP fisik; alamat tersebut khusus agar emulator AVD bisa mengakses localhost komputer Anda.
+
+3. Isi **Nomor WhatsApp** dan **Token** (pastikan token sama persis dengan `INGEST_TOKEN` yang ada di .env server).
 4. Tekan **Simpan**.
 5. Tekan **Beri Izin Notification Access**, lalu aktifkan WA OTP Forwarder.
 6. Pastikan notifikasi WhatsApp dan aktivitas background tidak diblokir.
@@ -102,22 +82,13 @@ Lihat [docs/redroid-server-setup.md](docs/redroid-server-setup.md).
 ## File Structure
 
 ```
-wa-otp-receiver/
-├── src/
-│   ├── ingest-server.ts          # Entry point — ingest server (npm run dev)
-│   ├── ingest/
-│   │   └── notification-handler.ts  # Terima notif → extractOtp → email
-│   ├── otp-extractor.ts          # Pattern matching OTP (kode angka & link)
-│   └── mailer.ts                 # Kirim email notifikasi OTP
-├── android-forwarder/            # APK Android notification listener
-├── .env.example
-└── package.json
+whatapp-otp/
+├── android-forwarder/            # APK Android notification listener project
+│   ├── app/                      # Main application module
+│   │   ├── src/main/             
+│   │   │   ├── java/             # Source code (MainActivity, OtpNotificationListener)
+│   │   │   ├── res/              # UI resources (layouts, strings, network security config)
+│   │   │   └── AndroidManifest.xml # App configuration and system permissions
+│   │   └── build.gradle          # App-level Gradle build script
+├── docs/                         # Additional documentation (e.g., redroid-server-setup)
 ```
-
-## Env vars (ingest)
-
-| Var | Fungsi |
-|---|---|
-| `INGEST_PORT` | Port server (default 3000) |
-| `INGEST_TOKEN` | Shared secret dgn app (opsional) |
-| `MAIL_*`, `MAIL_TO`, `MAIL_CC` | Konfigurasi email |
