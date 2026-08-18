@@ -17,7 +17,7 @@ device**, lalu baca OTP dari **notifikasi** device itu.
 │  + WA OTP Forwarder (app Android)          │
 │    └─ NotificationListenerService          │
 │        baca notif OTP → POST /ingest ──────┼──▶ OTP Webportal (Repo Terpisah)
-└──────────────────────────────────────────────┘      └─ Simpan DB & Kirim Email Massal
+└────────────────────────────────────────────┘      └─ Simpan DB & Kirim Email Massal
 ```
 - Repository [OTP Web Portal](https://github.com/NS2006/otp-webportal)
 
