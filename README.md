@@ -19,7 +19,7 @@ device**, lalu baca OTP dari **notifikasi** device itu.
 │        baca notif OTP → POST /ingest ──────┼──▶ OTP Webportal (Repo Terpisah)
 └──────────────────────────────────────────────┘      └─ Simpan DB & Kirim Email Massal
 ```
-- Repository [https://github.com/NS2006/otp-webportal](OTP Web Portal)
+- Repository [OTP Web Portal](https://github.com/NS2006/otp-webportal)
 
 ## Setup Forwarder App
 
