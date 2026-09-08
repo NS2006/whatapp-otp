@@ -16,10 +16,16 @@ device**, lalu baca OTP dari **notifikasi** device itu.
 │  WhatsApp / SMS                            │
 │  + WA OTP Forwarder (app Android)          │
 │    └─ NotificationListenerService          │
-│        baca notif OTP → POST /ingest ──────┼──▶ OTP Webportal (Repo Terpisah)
+│        baca notif OTP → POST ──────────────┼──▶ OTP Webportal (Repo Terpisah)
 └────────────────────────────────────────────┘      └─ Simpan DB & Kirim Email Massal
 ```
 - Repository [OTP Web Portal](https://github.com/NS2006/otp-webportal)
+- Endpoint ingest: `POST /dangerously-skip-login/ingest`. Webportal berada di belakang Apps
+  Gateway, dan prefix `/dangerously-skip-login/**` adalah satu-satunya path yang
+  boleh diakses tanpa login. Forwarder tidak memegang sesi gateway — bekalnya
+  hanya header `x-ingest-token` — jadi POST ke path lama `/ingest` akan
+  dibelokkan ke halaman login begitu gateway aktif. Server masih menerima
+  `/ingest` untuk sementara, tetapi jangan dipakai untuk pemasangan baru.
 
 ## Setup Forwarder App
 
@@ -58,10 +64,12 @@ adb install -r app\build\outputs\apk\debug\app-debug.apk
 Setelah aplikasi terpasang:
 
 1. Buka aplikasi.
-2. Isi Server URL dengan alamat endpoint Ingest Server Anda.
-    - Berkat konfigurasi Network Security, Anda dapat dengan aman menggunakan HTTP untuk testing di jaringan lokal (misalnya [http://192.168.1.10:3000/ingest](http://192.168.1.10:3000/ingest)) maupun HTTPS untuk server produksi ([https://otp.example.com/ingest](https://otp.example.com/ingest)).
+2. Isi Server URL dengan endpoint ingest webportal, yaitu base URL-nya ditambah `/dangerously-skip-login/ingest`.
+    - Berkat konfigurasi Network Security, Anda dapat dengan aman menggunakan HTTP untuk testing di jaringan lokal (misalnya `http://192.168.1.10:3000/dangerously-skip-login/ingest`) maupun HTTPS untuk server produksi (`https://otp.example.com/dangerously-skip-login/ingest`).
 
     - Catatan: Jangan gunakan 10.0.2.2 pada HP fisik; alamat tersebut khusus agar emulator AVD bisa mengakses localhost komputer Anda.
+
+    - Perangkat yang sudah terpasang dengan Server URL lama berakhiran `/ingest` tidak perlu dikonfigurasi ulang satu per satu: app menyesuaikannya sendiri ke `/dangerously-skip-login/ingest` saat mengirim, dan memperbarui isi kolomnya saat layar konfigurasi dibuka.
 
 3. Isi **Nomor WhatsApp** dan **Token** (pastikan token sama persis dengan `INGEST_TOKEN` yang ada di .env server).
 4. Tekan **Simpan**.

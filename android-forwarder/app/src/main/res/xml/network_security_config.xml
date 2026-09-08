@@ -4,8 +4,9 @@
       Izinkan HTTP polos (cleartext) untuk SEMUA host.
 
       Alasan: server URL berbeda per lingkungan tanpa harus rebuild APK:
-        - AVD (Android Studio)  : http://10.0.2.2:3000/ingest
-        - redroid (server Linux): http://172.17.0.1:3000/ingest atau IP LAN server
+        - AVD (Android Studio)  : http://10.0.2.2:3000/dangerously-skip-login/ingest
+        - redroid (server Linux): http://172.17.0.1:3000/dangerously-skip-login/ingest
+                                  atau IP LAN server
 
       ⚠️  PRODUKSI: ganti komunikasi ke HTTPS dan SET base-config
           cleartextTrafficPermitted="false". Cleartext hanya untuk

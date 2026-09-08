@@ -144,7 +144,8 @@ isi Server URL / Nomor / Token, aktifkan Notification Access.
 > ```
 
 **Server URL di server Linux:** karena Ingest Server jalan di host yang sama,
-gunakan IP host yang dijangkau container (mis. `http://172.17.0.1:3000/ingest`
+gunakan IP host yang dijangkau container (mis.
+`http://172.17.0.1:3000/dangerously-skip-login/ingest`
 — gateway docker bridge — atau IP LAN server). BUKAN `10.0.2.2` (itu khusus AVD).
 
 ---

@@ -28,7 +28,22 @@ class MainActivity : AppCompatActivity() {
         val waGroup2 = findViewById<RadioGroup>(R.id.waGroup2)
         val tokenInput = findViewById<EditText>(R.id.token)
 
-        urlInput.setText(prefs.getString("server_url", ""))
+        // Perangkat yang sudah terpasang menyimpan Server URL berakhiran
+        // `/ingest`. Nilainya disesuaikan ke path baru begitu layar ini dibuka,
+        // lalu langsung disimpan, supaya kolomnya menampilkan URL yang benar-benar
+        // dipakai saat mengirim — bukan nilai lama yang sudah tidak berlaku.
+        val storedUrl = prefs.getString("server_url", "") ?: ""
+        val resolvedUrl = OtpNotificationListener.resolveIngestUrl(storedUrl)
+        if (resolvedUrl != storedUrl) {
+            prefs.edit().putString("server_url", resolvedUrl).apply()
+            Toast.makeText(
+                this,
+                "Server URL disesuaikan ke ${OtpNotificationListener.INGEST_PATH}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        urlInput.setText(resolvedUrl)
         phone1Input.setText(prefs.getString("phone1", ""))
         phone2Input.setText(prefs.getString("phone2", ""))
         tokenInput.setText(prefs.getString("token", ""))
@@ -52,7 +67,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             prefs.edit()
-                .putString("server_url", urlInput.text.toString().trim())
+                .putString("server_url", OtpNotificationListener.resolveIngestUrl(urlInput.text.toString()))
                 .putString("phone1", phone1Input.text.toString().trim())
                 .putString("wa_type1", waType1)
                 .putString("phone2", phone2Input.text.toString().trim())

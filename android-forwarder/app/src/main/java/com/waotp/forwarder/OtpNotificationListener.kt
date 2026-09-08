@@ -57,7 +57,9 @@ class OtpNotificationListener : NotificationListenerService() {
 
     private fun forward(title: String, text: String, pkg: String, postedAt: Long, simSlot: Int?) {
         val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
-        val serverUrl = prefs.getString("server_url", null) ?: return
+        val storedUrl = prefs.getString("server_url", null) ?: return
+        val serverUrl = resolveIngestUrl(storedUrl)
+        if (serverUrl.isEmpty()) return
         
         // Ambil data
         val phone1 = prefs.getString("phone1", "") ?: ""
@@ -125,6 +127,45 @@ class OtpNotificationListener : NotificationListenerService() {
     companion object {
         private const val TAG = "OtpForwarder"
         const val PREFS = "otp_forwarder_prefs"
+
+        /**
+         * Path ingest di OTP Webportal.
+         *
+         * Webportal berada di belakang Apps Gateway, dan gateway mewajibkan
+         * login untuk semua path KECUALI yang berada di bawah prefix
+         * `/dangerously-skip-login/`. Forwarder ini tidak memegang sesi
+         * gateway — bekalnya hanya header `x-ingest-token` — sehingga POST ke
+         * path lama `/ingest` akan dibelokkan ke halaman login gateway dan
+         * tidak pernah sampai ke server.
+         */
+        const val INGEST_PATH = "/dangerously-skip-login/ingest"
+
+        private const val LEGACY_INGEST_PATH = "/ingest"
+
+        /**
+         * Mengembalikan Server URL yang menunjuk path ingest yang benar.
+         *
+         * Perangkat yang sudah terpasang menyimpan Server URL berakhiran
+         * `/ingest` di SharedPreferences. Mengganti teks contoh di layar
+         * konfigurasi tidak mengubah nilai yang sudah tersimpan itu, jadi
+         * penyesuaiannya dikerjakan di sini juga — kalau hanya di layar
+         * konfigurasi, OTP dari perangkat yang tidak pernah dibuka lagi
+         * berhenti masuk begitu gateway dipasang.
+         *
+         * Urutan pemeriksaan penting: path baru juga berakhiran `/ingest`,
+         * jadi memeriksa path lama lebih dulu akan menghasilkan
+         * `/dangerously-skip-login/dangerously-skip-login/ingest`.
+         */
+        fun resolveIngestUrl(rawUrl: String): String {
+            val url = rawUrl.trim().trimEnd('/')
+            if (url.isEmpty()) return url
+            if (url.endsWith(INGEST_PATH)) return url
+            if (url.endsWith(LEGACY_INGEST_PATH)) {
+                return url.removeSuffix(LEGACY_INGEST_PATH) + INGEST_PATH
+            }
+            return url
+        }
+
         val ALLOWED_PACKAGES = setOf(
             // WHATSAPP
             "com.whatsapp", 
