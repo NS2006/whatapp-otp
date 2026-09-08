@@ -62,7 +62,7 @@ Setelah aplikasi dibuka:
    forwarder hanya membawa `x-ingest-token`, bukan sesi gateway. URL lama
    berakhiran `/ingest` disesuaikan otomatis oleh app saat disimpan maupun saat
    mengirim.
-2. Isi **Nomor** dengan nomor WhatsApp pada HP, misalnya `6285965885649`.
+2. Isi **Nomor** dengan nomor WhatsApp pada HP, misalnya `628xxxxxxxxxx`.
 3. Isi **Token** dengan nilai `INGEST_TOKEN` yang sama seperti di server.
 4. Tekan **Simpan**.
 5. Tekan **Beri Izin Notification Access**, lalu aktifkan WA OTP Forwarder.
