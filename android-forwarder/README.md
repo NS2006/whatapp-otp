@@ -53,10 +53,16 @@ untuk memasang aplikasi dari sumber tersebut.
 
 Setelah aplikasi dibuka:
 
-1. Isi **Server URL** dengan alamat yang dapat dijangkau HP, misalnya
-   `https://otp.example.com/ingest` atau `http://192.168.1.10:3000/ingest`.
+1. Isi **Server URL** dengan endpoint ingest yang dapat dijangkau HP, misalnya
+   `https://otp.example.com/dangerously-skip-login/ingest` atau
+   `http://192.168.1.10:3000/dangerously-skip-login/ingest`.
    Jangan gunakan `10.0.2.2` pada HP fisik; alamat itu hanya untuk emulator AVD.
-2. Isi **Nomor** dengan nomor WhatsApp pada HP, misalnya `6285965885649`.
+   Path `/dangerously-skip-login/ingest` wajib: di belakang Apps Gateway hanya
+   prefix `/dangerously-skip-login/**` yang boleh diakses tanpa login, dan
+   forwarder hanya membawa `x-ingest-token`, bukan sesi gateway. URL lama
+   berakhiran `/ingest` disesuaikan otomatis oleh app saat disimpan maupun saat
+   mengirim.
+2. Isi **Nomor** dengan nomor WhatsApp pada HP, misalnya `628xxxxxxxxxx`.
 3. Isi **Token** dengan nilai `INGEST_TOKEN` yang sama seperti di server.
 4. Tekan **Simpan**.
 5. Tekan **Beri Izin Notification Access**, lalu aktifkan WA OTP Forwarder.

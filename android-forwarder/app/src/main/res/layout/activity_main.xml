@@ -21,7 +21,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Server URL (mis. http://10.0.2.2:3000/ingest)" />
+            android:text="Server URL (mis. http://10.0.2.2:3000/dangerously-skip-login/ingest)" />
 
         <EditText
             android:id="@+id/serverUrl"
@@ -126,7 +126,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Token (opsional)"
+            android:text="Token (wajib, sama dengan INGEST_TOKEN di server)"
             android:paddingTop="16dp" />
 
         <EditText
