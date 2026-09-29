@@ -126,7 +126,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Token (opsional)"
+            android:text="Token (wajib, sama dengan INGEST_TOKEN di server)"
             android:paddingTop="16dp" />
 
         <EditText

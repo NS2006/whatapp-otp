@@ -67,6 +67,13 @@ class OtpNotificationListener : NotificationListenerService() {
         val waType1 = prefs.getString("wa_type1", "none") ?: "none"
         val waType2 = prefs.getString("wa_type2", "none") ?: "none"
         val token = prefs.getString("token", "") ?: ""
+        if (token.isBlank()) {
+            // Tanpa token server selalu menjawab 401, jadi mengirim tetap berarti
+            // meneruskan isi OTP tanpa kredensial untuk hasil yang sama. Konfigurasi
+            // lama bisa masih menyimpan token kosong karena dulu field ini opsional.
+            Log.w(TAG, "Token belum diisi — notifikasi tidak diteruskan")
+            return
+        }
 
 
         var matchedPhone = phone1 // Default nya SIM 1
@@ -108,7 +115,7 @@ class OtpNotificationListener : NotificationListenerService() {
                     connectTimeout = 10000
                     readTimeout = 10000
                     setRequestProperty("Content-Type", "application/json")
-                    if (token.isNotBlank()) setRequestProperty("x-ingest-token", token)
+                    setRequestProperty("x-ingest-token", token)
                 }
 
                 conn.outputStream.use { os: OutputStream ->

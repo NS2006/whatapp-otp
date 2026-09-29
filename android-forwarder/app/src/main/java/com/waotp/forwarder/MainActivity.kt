@@ -66,13 +66,24 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val token = tokenInput.text.toString().trim()
+            if (token.isEmpty()) {
+                // Server selalu menolak kiriman tanpa token (401). Menyimpan konfigurasi
+                // tanpa token hanya menghasilkan OTP yang diam-diam hilang, jadi ditolak
+                // di sini, di tempat operator masih bisa melihat dan memperbaikinya.
+                tokenInput.error = "Token wajib diisi"
+                tokenInput.requestFocus()
+                Toast.makeText(this, "Error: Token wajib diisi.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
             prefs.edit()
                 .putString("server_url", OtpNotificationListener.resolveIngestUrl(urlInput.text.toString()))
                 .putString("phone1", phone1Input.text.toString().trim())
                 .putString("wa_type1", waType1)
                 .putString("phone2", phone2Input.text.toString().trim())
                 .putString("wa_type2", waType2)
-                .putString("token", tokenInput.text.toString().trim())
+                .putString("token", token)
                 .apply()
 
             Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
