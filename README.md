@@ -14,7 +14,7 @@ Solusinya adalah menjadikan HP atau emulator Android yang kita kontrol sebagai *
 │  WhatsApp / WhatsApp Business / SMS              │
 │                    │                             │
 │                    ▼                             │
-│          WA OTP Forwarder                       │
+│          WA OTP Forwarder                        │
 │          NotificationListenerService             │
 │                    │                             │
 │                    │  Sign request               │
@@ -88,8 +88,17 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-21'
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
 
 java -version
+```
 
-# Pastikan local.properties menunjuk ke Android SDK komputer ini.
+Pastikan file `local.properties` menunjuk ke lokasi Android SDK. Contoh:
+
+```properties
+sdk.dir=C\:\\Users\\ivan.david\\AppData\\Local\\Android\\Sdk
+```
+
+File tersebut bersifat lokal dan tidak disimpan di GitHub. Kemudian jalankan
+clean build dan lint:
+```powershell
 .\gradlew.bat clean assembleDebug
 .\gradlew.bat lintDebug
 ```
@@ -387,32 +396,6 @@ whatapp-otp/
 │
 └── README.md
 ```
-
----
-
-# Related Repository
-
-OTP Webportal:
-
-[OTP Web Portal](https://github.com/NS2006/otp-webportal)
-
-Webportal bertanggung jawab untuk:
-
-* Mengelola device.
-* Membuat ECDSA key pair.
-* Menyimpan public key.
-* Menampilkan private key satu kali ketika device dibuat.
-* Menyediakan QR provisioning.
-* Menerima dan memverifikasi signed OTP request.
-* Menyimpan OTP ke database.
-* Mengirim email massal.
-
-Android Forwarder bertanggung jawab untuk:
-
-* Membaca notification OTP.
-* Menyimpan credential device.
-* Menandatangani request menggunakan private key.
-* Mengirim OTP ke Ingest Server.
 
 ---
 
